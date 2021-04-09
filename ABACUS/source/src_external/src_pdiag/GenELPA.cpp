@@ -110,17 +110,15 @@ using namespace std;
 
 int pdSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
                      double *a, double *b, double *ev, double *q, double *work,
-                     int mpi_comm_world, int my_blacs_ctxt, 
-                     int &method,
+                     MPI_Comm comm, int comm_f, int my_blacs_ctxt, int &method,
                      bool wantEigenVector, bool wantDebug)
 {
     int info;
     int mpi_comm_rows, mpi_comm_cols;
-    int nprows, npcols, myprow, mypcol;	// nblk;
+    int nprows, npcols, myprow, mypcol;
 
     #ifdef _DEBUG
         int myid;
-        time_t t0, t1;
         double t;
         stringstream outlog;
         MPI_Comm_rank(MPI_COMM_WORLD, &myid);
@@ -132,7 +130,7 @@ int pdSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
 
     info=0;
     Cblacs_gridinfo(my_blacs_ctxt, &nprows, &npcols, &myprow, &mypcol);
-    info=get_elpa_communicators(mpi_comm_world, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
+    info=get_elpa_communicators(comm_f, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
 
     if(info != 0) return info;
 
@@ -142,7 +140,7 @@ int pdSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
     #endif
     info=pdDecomposeRightMatrix1(nFull, narows, nacols, desc,
                                 b, ev, q, work,
-                                mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method);
+                                comm, comm_f, mpi_comm_rows, mpi_comm_cols, method);
     #ifdef _DEBUG
         timer(myid, "pdDecomposeRightMatrix1", method, "A", t);
     #endif
@@ -165,13 +163,13 @@ int pdSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
 
 int pdSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
                      double *a, double *b, double *ev, double *q, double *work,
-                     int mpi_comm_world, int my_blacs_ctxt, 
-                     int &method, int THIS_REAL_ELPA_KERNEL_API, int useQR,
+                     MPI_Comm comm, int comm_f, int my_blacs_ctxt, int &method,
+                     int THIS_REAL_ELPA_KERNEL_API, int useQR,
                      bool wantEigenVector, bool wantDebug)
 {
     int info;
     int mpi_comm_rows, mpi_comm_cols;
-    int nprows, npcols, myprow, mypcol;	// nblk;
+    int nprows, npcols, myprow, mypcol;
 
     #ifdef _DEBUG
         int myid;
@@ -186,7 +184,7 @@ int pdSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
 
     info=0;
     Cblacs_gridinfo(my_blacs_ctxt, &nprows, &npcols, &myprow, &mypcol);
-    info=get_elpa_communicators(mpi_comm_world, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
+    info=get_elpa_communicators(comm_f, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
 
     if(info != 0) return info;
     #ifdef _DEBUG
@@ -195,7 +193,7 @@ int pdSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
     #endif
     info=pdDecomposeRightMatrix2(nFull, narows, nacols, desc,
                                 b, ev, q, work,
-                                mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method,
+                                comm, comm_f, mpi_comm_rows, mpi_comm_cols, method,
                                 THIS_REAL_ELPA_KERNEL_API, useQR);
     #ifdef _DEBUG
         timer(myid, "pdDecomposeRightMatrix2", method, "A", t);
@@ -209,7 +207,7 @@ int pdSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
     #endif
     info=pdSolveEigen2(nev, nFull, narows, nacols, desc,
                        a, b, ev, q, work,
-                       mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method,
+                       comm, comm_f, mpi_comm_rows, mpi_comm_cols, method,
                        THIS_REAL_ELPA_KERNEL_API, useQR,
                        wantEigenVector, wantDebug);
     #ifdef _DEBUG
@@ -220,8 +218,7 @@ int pdSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
 
 int pdDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
                            double *b, double *ev, double *q, double *work,
-                           int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, 
-                           int &method)
+                           MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int &method)
 {
     int info=0; // for elpa functions, 1 is for success, 0 is for failure
     int wantDebug=false;
@@ -243,7 +240,7 @@ int pdDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pdCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                            mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
+                                            comm, comm_f, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
@@ -269,7 +266,7 @@ int pdDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pdCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                            mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
+                                            comm, comm_f, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
@@ -294,12 +291,11 @@ int pdDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
 
 int pdDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                            double *b, double *ev, double *q, double *work,
-                           int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, 
-                           int &method, int THIS_REAL_ELPA_KERNEL_API, int useQR)
+                           MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int &method,
+                           int THIS_REAL_ELPA_KERNEL_API, int useQR)
 {
     int info=0; // for elpa functions, 1 is for success, 0 is for failure
     int wantDebug=false;
-    //int allinfo=0;
 
     #ifdef _DEBUG
         int myid;
@@ -319,7 +315,7 @@ int pdDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pdCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                            mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
+                                            comm, comm_f, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
@@ -332,7 +328,7 @@ int pdDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                 #endif
                 info=pdDiagonalizeRightMatrix2(nFull, narows, nacols, desc,
                                             b, ev, q, work,
-                                            mpi_comm_world, mpi_comm_rows, mpi_comm_cols,
+                                            comm, comm_f, mpi_comm_rows, mpi_comm_cols,
                                             THIS_REAL_ELPA_KERNEL_API, useQR);
                 #ifdef _DEBUG
                     timer(myid, "pdDiagonalizeRightMatrix2", method, "A3", t);
@@ -346,7 +342,7 @@ int pdDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pdCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                            mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
+                                            comm, comm_f, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pdCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
@@ -358,7 +354,7 @@ int pdDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
             #endif
             info=pdDiagonalizeRightMatrix2(nFull, narows, nacols, desc,
                                         b, ev, q, work,
-                                        mpi_comm_world, mpi_comm_rows, mpi_comm_cols,
+                                        comm, comm_f, mpi_comm_rows, mpi_comm_cols,
                                         THIS_REAL_ELPA_KERNEL_API, useQR);
             #ifdef _DEBUG
                 timer(myid, "pdDiagonalizeRightMatrix2", method, "A3", t);
@@ -371,17 +367,14 @@ int pdDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
 }
 
 int pdCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc, double *b,
-                                   int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, 
-                                   int &method, 
-                                   bool wantDebug)
+                                   MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int &method, bool wantDebug)
 {
     int info, allinfo;
     int my_blacs_ctxt;
     int nprows, npcols, myprow, mypcol, nblk;
-    char uplo;	//transa, transb, side, diag;
     int isrc=1, jsrc=1;
-    //double alpha, beta;
     int lda;
+    char uplo;
 
     #ifdef _DEBUG
         int myid;
@@ -412,7 +405,7 @@ int pdCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
         #ifdef _DEBUG
             timer(myid, "pdpotrf_", method, "1", t);
         #endif
-        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, mpi_comm_world);
+        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, comm);
         if(allinfo != 0)
         {
             if(method==1)
@@ -431,7 +424,7 @@ int pdCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
                 #ifdef _DEBUG
                     timer(myid, "elpa_cholesky_real", method, "1", t);
                 #endif
-                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, mpi_comm_world);
+                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, comm);
                 if(allinfo != 1)
                 {
                     info=10;
@@ -452,7 +445,7 @@ int pdCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
         #ifdef _DEBUG
             timer(myid, "elpa_cholesky_real", method, "1", t);
         #endif
-        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, mpi_comm_world);
+        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, comm);
         if(allinfo != 1)
         {
             if(method==2)
@@ -472,7 +465,7 @@ int pdCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
                 #ifdef _DEBUG
                     timer(myid, "pdpotrf_", method, "1", t);
                 #endif
-                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, mpi_comm_world);
+                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, comm);
                 if(allinfo != 0)
                 {
                     info=10;
@@ -606,7 +599,7 @@ int pdDiagonalizeRightMatrix1(int nFull, int narows, int nacols, int *desc,
 
 int pdDiagonalizeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                               double *b, double *ev, double *q, double *work,
-                              int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols,
+                              MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols,
                               int THIS_REAL_ELPA_KERNEL_API, int useQR)
 {
     int info;
@@ -641,7 +634,7 @@ int pdDiagonalizeRightMatrix2(int nFull, int narows, int nacols, int *desc,
         timer(myid, "elpa_solve_evp_real_2stage", method, "1", t);
     #endif
     info=elpa_solve_evp_real_2stage(nFull, nFull, b, lda, ev, q, lda, nblk, nacols,
-                                    mpi_comm_rows, mpi_comm_cols, mpi_comm_world,
+                                    mpi_comm_rows, mpi_comm_cols, comm_f,
                                     THIS_REAL_ELPA_KERNEL_API, useQR);
     #ifdef _DEBUG
         timer(myid, "elpa_solve_evp_real_2stage", method, "1", t);
@@ -860,7 +853,7 @@ int pdSolveEigen1(int nev, int nFull, int narows, int nacols, int *desc,
 
 int pdSolveEigen2(int nev, int nFull, int narows, int nacols, int *desc,
                  double *a, double *b, double *ev, double *q, double *work,
-                 int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, int method,
+                 MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int method,
                  int THIS_REAL_ELPA_KERNEL_API, int useQR,
                  bool wantEigenVector, bool wantDebug)
 {
@@ -929,7 +922,7 @@ int pdSolveEigen2(int nev, int nFull, int narows, int nacols, int *desc,
             timer(myid, "elpa_solve_evp_real_2stage", method, "6", t);
         #endif
         info=elpa_solve_evp_real_2stage(nFull, nev, a, lda, ev, q, lda, nblk, nacols,
-                                        mpi_comm_rows, mpi_comm_cols, mpi_comm_world,
+                                        mpi_comm_rows, mpi_comm_cols, comm_f,
                                         THIS_REAL_ELPA_KERNEL_API, useQR);
         #ifdef _DEBUG
             timer(myid, "elpa_solve_evp_real_2stage", method, "6", t);
@@ -994,7 +987,7 @@ int pdSolveEigen2(int nev, int nFull, int narows, int nacols, int *desc,
             timer(myid, "elpa_solve_evp_real_2stage", method, "6", t);
         #endif
         info=elpa_solve_evp_real_2stage(nFull, nev, a, lda, ev, work, lda, nblk, nacols,
-                                        mpi_comm_rows, mpi_comm_cols, mpi_comm_world,
+                                        mpi_comm_rows, mpi_comm_cols, comm_f,
                                         THIS_REAL_ELPA_KERNEL_API, useQR);
         #ifdef _DEBUG
             timer(myid, "elpa_solve_evp_real_2stage", method, "6", t);
@@ -1033,17 +1026,15 @@ int pdSolveEigen2(int nev, int nFull, int narows, int nacols, int *desc,
 
 int pzSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
                      complex<double> *a, complex<double> *b, double *ev, complex<double> *q, complex<double> *work,
-                     int mpi_comm_world, int my_blacs_ctxt, 
-                     int &method,
+                     MPI_Comm comm, int comm_f, int my_blacs_ctxt, int &method,
                      bool wantEigenVector, bool wantDebug)
 {
     int info;
     int mpi_comm_rows, mpi_comm_cols;
-    int nprows, npcols, myprow, mypcol;	// nblk;
+    int nprows, npcols, myprow, mypcol;
 
     #ifdef _DEBUG
         int myid;
-        time_t t0, t1;
         double t;
         stringstream outlog;
         MPI_Comm_rank(MPI_COMM_WORLD, &myid);
@@ -1055,7 +1046,7 @@ int pzSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
 
     info=0;
     Cblacs_gridinfo(my_blacs_ctxt, &nprows, &npcols, &myprow, &mypcol);
-    info=get_elpa_communicators(mpi_comm_world, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
+    info=get_elpa_communicators(comm_f, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
 
     if(info != 0) return info;
 
@@ -1065,7 +1056,7 @@ int pzSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
     #endif
     info=pzDecomposeRightMatrix1(nFull, narows, nacols, desc,
                                 b, ev, q, work,
-                                mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method);
+                                comm, comm_f, mpi_comm_rows, mpi_comm_cols, method);
     #ifdef _DEBUG
         timer(myid, "pzDecomposeRightMatrix1", method, "A", t);
     #endif
@@ -1088,13 +1079,13 @@ int pzSolveGenEigen1(int nev, int nFull, int narows, int nacols, int *desc,
 
 int pzSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
                      complex<double> *a, complex<double> *b, double *ev, complex<double> *q, complex<double> *work,
-                     int mpi_comm_world, int my_blacs_ctxt, 
-                     int &method, int THIS_REAL_ELPA_KERNEL_API,
+                     MPI_Comm comm, int comm_f, int my_blacs_ctxt, int &method,
+                     int THIS_REAL_ELPA_KERNEL_API,
                      bool wantEigenVector, bool wantDebug)
 {
     int info;
     int mpi_comm_rows, mpi_comm_cols;
-    int nprows, npcols, myprow, mypcol;	// nblk;
+    int nprows, npcols, myprow, mypcol;
 
     #ifdef _DEBUG
         int myid;
@@ -1109,7 +1100,7 @@ int pzSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
 
     info=0;
     Cblacs_gridinfo(my_blacs_ctxt, &nprows, &npcols, &myprow, &mypcol);
-    info=get_elpa_communicators(mpi_comm_world, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
+    info=get_elpa_communicators(comm_f, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
 
     if(info != 0) return info;
     #ifdef _DEBUG
@@ -1118,7 +1109,7 @@ int pzSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
     #endif
     info=pzDecomposeRightMatrix2(nFull, narows, nacols, desc,
                                 b, ev, q, work,
-                                mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method,
+                                comm, comm_f, mpi_comm_rows, mpi_comm_cols, method,
                                 THIS_REAL_ELPA_KERNEL_API);
     #ifdef _DEBUG
         timer(myid, "pzDecomposeRightMatrix2", method, "A", t);
@@ -1132,7 +1123,7 @@ int pzSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
     #endif
     info=pzSolveEigen2(nev, nFull, narows, nacols, desc,
                        a, b, ev, q, work,
-                       mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method,
+                       comm, comm_f, mpi_comm_rows, mpi_comm_cols, method,
                        THIS_REAL_ELPA_KERNEL_API,
                        wantEigenVector, wantDebug);
     #ifdef _DEBUG
@@ -1143,8 +1134,7 @@ int pzSolveGenEigen2(int nev, int nFull, int narows, int nacols, int *desc,
 
 int pzDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
                            complex<double> *b, double *ev, complex<double> *q, complex<double> *work,
-                           int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, 
-                           int &method)
+                           MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int &method)
 {
     int info=0; // for elpa functions, 1 is for success, 0 is for failure
     int wantDebug=false;
@@ -1166,7 +1156,7 @@ int pzDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pzCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                            mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
+                                            comm, comm_f, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
@@ -1192,7 +1182,7 @@ int pzDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pzCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                                mpi_comm_world, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
+                                                comm, comm_f, mpi_comm_rows, mpi_comm_cols, method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
@@ -1217,12 +1207,11 @@ int pzDecomposeRightMatrix1(int nFull, int narows, int nacols, int *desc,
 
 int pzDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                            complex<double> *b, double *ev, complex<double> *q, complex<double> *work,
-                           int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, 
-                           int &method, int THIS_REAL_ELPA_KERNEL_API)
+                           MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int &method,
+                           int THIS_REAL_ELPA_KERNEL_API)
 {
     int info=0; // for elpa functions, 1 is for success, 0 is for failure
     int wantDebug=false;
-    //int allinfo=0;
 
     #ifdef _DEBUG
         int myid;
@@ -1242,7 +1231,7 @@ int pzDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pzCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                            		mpi_comm_world, mpi_comm_rows, mpi_comm_cols, 
+                                            		comm, comm_f, mpi_comm_rows, mpi_comm_cols, 
                                             		method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
@@ -1256,7 +1245,7 @@ int pzDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                 #endif
                 info=pzDiagonalizeRightMatrix2(nFull, narows, nacols, desc,
                                             b, ev, q, work,
-                                            mpi_comm_world, mpi_comm_rows, mpi_comm_cols,
+                                            comm, comm_f, mpi_comm_rows, mpi_comm_cols,
                                             THIS_REAL_ELPA_KERNEL_API);
                 #ifdef _DEBUG
                     timer(myid, "pzDiagonalizeRightMatrix2", method, "A3", t);
@@ -1270,7 +1259,7 @@ int pzDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
             #endif
             info=pzCheloskyDecomposeRightMatrix(nFull, narows, nacols, desc, b,
-                                            	  mpi_comm_world, mpi_comm_rows, mpi_comm_cols, 
+                                            	  comm, comm_f, mpi_comm_rows, mpi_comm_cols, 
                                             	  method, wantDebug);
             #ifdef _DEBUG
                 timer(myid, "pzCheloskyDecomposeRightMatrix", method, "A", t);
@@ -1283,7 +1272,7 @@ int pzDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
             #endif
             info=pzDiagonalizeRightMatrix2(nFull, narows, nacols, desc,
                                            b, ev, q, work,
-                                           mpi_comm_world, mpi_comm_rows, mpi_comm_cols,
+                                           comm, comm_f, mpi_comm_rows, mpi_comm_cols,
                                            THIS_REAL_ELPA_KERNEL_API);                                       
 //						int pzDiagonalizeRightMatrix2(int nFull, int narows, int nacols, int *desc,
 //						                              complex<doubles> *b, double *ev, complex<double> *q, complex<double> *work,
@@ -1300,9 +1289,7 @@ int pzDecomposeRightMatrix2(int nFull, int narows, int nacols, int *desc,
 }
 
 int pzCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc, complex<double> *b,
-                                   int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, 
-                                   int &method, 
-                                   bool wantDebug)
+                                   MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int &method, bool wantDebug)
 {
     int info, allinfo;
     int my_blacs_ctxt;
@@ -1341,7 +1328,7 @@ int pzCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
         #ifdef _DEBUG
             timer(myid, "pzpotrf_", method, "1", t);
         #endif
-        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, mpi_comm_world);
+        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, comm);
         if(allinfo != 0)
         {
             if(method==1)
@@ -1360,7 +1347,7 @@ int pzCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
                 #ifdef _DEBUG
                     timer(myid, "elpa_cholesky_complex", method, "1", t);
                 #endif
-                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, mpi_comm_world);
+                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, comm);
                 if(allinfo != 1)
                 {
                     info=10;
@@ -1381,7 +1368,7 @@ int pzCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
         #ifdef _DEBUG
             timer(myid, "elpa_cholesky_complex", method, "1", t);
         #endif
-        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, mpi_comm_world);
+        MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_MIN, comm);
         if(allinfo != 1)
         {
             if(method==2)
@@ -1401,7 +1388,7 @@ int pzCheloskyDecomposeRightMatrix(int nFull, int narows, int nacols, int *desc,
                 #ifdef _DEBUG
                     timer(myid, "pzpotrf_", method, "1", t);
                 #endif
-                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, mpi_comm_world);
+                MPI_Allreduce(&info, &allinfo, 1, MPI_INT, MPI_SUM, comm);
                 if(allinfo != 0)
                 {
                     info=10;
@@ -1538,7 +1525,7 @@ int pzDiagonalizeRightMatrix1(int nFull, int narows, int nacols, int *desc,
 
 int pzDiagonalizeRightMatrix2(int nFull, int narows, int nacols, int *desc,
                               complex<double> *b, double *ev, complex<double> *q, complex<double> *work,
-                              int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols,
+                              MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols,
                               int THIS_REAL_ELPA_KERNEL_API)
 {
     int info;
@@ -1576,7 +1563,7 @@ int pzDiagonalizeRightMatrix2(int nFull, int narows, int nacols, int *desc,
         timer(myid, "elpa_solve_evp_complex_2stage", method, "1", t);
     #endif
     info=elpa_solve_evp_complex_2stage(nFull, nFull, bb, lda, ev, qq, lda, nblk, nacols,
-                                    mpi_comm_rows, mpi_comm_cols, mpi_comm_world,
+                                    mpi_comm_rows, mpi_comm_cols, comm_f,
                                     THIS_REAL_ELPA_KERNEL_API);
     #ifdef _DEBUG
         timer(myid, "elpa_solve_evp_complex_2stage", method, "1", t);
@@ -1799,7 +1786,7 @@ int pzSolveEigen1(int nev, int nFull, int narows, int nacols, int *desc,
 
 int pzSolveEigen2(int nev, int nFull, int narows, int nacols, int *desc,
                  complex<double> *a, complex<double> *b, double *ev, complex<double> *q, complex<double> *work,
-                 int mpi_comm_world, int mpi_comm_rows, int mpi_comm_cols, int method,
+                 MPI_Comm comm, int comm_f, int mpi_comm_rows, int mpi_comm_cols, int method,
                  int THIS_REAL_ELPA_KERNEL_API, 
                  bool wantEigenVector, bool wantDebug)
 {
@@ -1872,7 +1859,7 @@ int pzSolveEigen2(int nev, int nFull, int narows, int nacols, int *desc,
             timer(myid, "elpa_solve_evp_complex_2stage", method, "6", t);
         #endif
         info=elpa_solve_evp_complex_2stage(nFull, nev, aa, lda, ev, qq, lda, nblk, nacols,
-                                        mpi_comm_rows, mpi_comm_cols, mpi_comm_world,
+                                        mpi_comm_rows, mpi_comm_cols, comm_f,
                                         THIS_REAL_ELPA_KERNEL_API);
         #ifdef _DEBUG
             timer(myid, "elpa_solve_evp_complex_2stage", method, "6", t);
@@ -1937,7 +1924,7 @@ int pzSolveEigen2(int nev, int nFull, int narows, int nacols, int *desc,
             timer(myid, "elpa_solve_evp_complex_2stage", method, "6", t);
         #endif
         info=elpa_solve_evp_complex_2stage(nFull, nev, aa, lda, ev, ww, lda, nblk, nacols,
-                                           mpi_comm_rows, mpi_comm_cols, mpi_comm_world,
+                                           mpi_comm_rows, mpi_comm_cols, comm_f,
                                            THIS_REAL_ELPA_KERNEL_API);
         #ifdef _DEBUG
             timer(myid, "elpa_solve_evp_complex_2stage", method, "6", t);

@@ -310,8 +310,8 @@ static int c__0 = 0;
 		irange = 1;
 	}
 	/*     Get machine constants */
-	eps = dlamch("P");
-	uflow = dlamch("U");
+	eps = dlamch_("P");
+	uflow = dlamch_("U");
 	/*     Special Case when N=1 */
 	/*     Treat case of 1x1 matrix for quick return */
 	if (*n == 1) {

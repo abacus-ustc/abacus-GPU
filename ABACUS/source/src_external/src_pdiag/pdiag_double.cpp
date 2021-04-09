@@ -36,10 +36,10 @@ inline int cart2blacs(MPI_Comm comm_2D, int nprows, int npcols, int N, int nblk,
             MPI_Cart_rank(comm_2D, pcoord, &usermap[i+j*nprows]);
         }
     }
-    Cblacs_get(comm_2D, 0, &my_blacs_ctxt);
+    Cblacs_get(0, 0, &my_blacs_ctxt);
     Cblacs_gridmap(&my_blacs_ctxt, usermap, nprows, nprows, npcols);
     Cblacs_gridinfo(my_blacs_ctxt, &nprows, &npcols, &myprow, &mypcol);
-    info=elpa_get_communicators(comm_2D, myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
+    info=elpa_get_communicators(MPI_Comm_c2f(comm_2D), myprow, mypcol, &mpi_comm_rows, &mpi_comm_cols);
     delete[] usermap;
     int ISRC=0;
     descinit_(desc, &N, &N, &nblk, &nblk, &ISRC, &ISRC, &my_blacs_ctxt, &lld, &info);
@@ -483,14 +483,14 @@ void Pdiag_Double::diago_double_begin(const int &ik, double **wfc, matrix &wfc_2
         	dcopy_(&nloc, s_mat, &inc, Stmp, &inc);
             info=pdDecomposeRightMatrix2(NLOCAL, nrow, ncol, desc,
                                         Stmp, eigen, wfc_2d.c, work,
-                                        comm_2D_f, mpi_comm_rows, mpi_comm_cols,
+                                        comm_2D, comm_2D_f, mpi_comm_rows, mpi_comm_cols,
                                         method, THIS_REAL_ELPA_KERNEL_API, useQR);
             timer::tick("Diago_LCAO_Matrix","genelpa1",'G');
         }
         timer::tick("Diago_LCAO_Matrix","genelpa2",'G');
         info=pdSolveEigen2(NBANDS, NLOCAL, nrow, ncol, desc,
                           h_mat, Stmp, eigen, wfc_2d.c, work,
-                          comm_2D_f, mpi_comm_rows, mpi_comm_cols, method,
+                          comm_2D, comm_2D_f, mpi_comm_rows, mpi_comm_cols, method,
                           THIS_REAL_ELPA_KERNEL_API, useQR,
                           wantEigenVector, wantDebug);
         timer::tick("Diago_LCAO_Matrix","genelpa2",'G');
@@ -673,13 +673,13 @@ void Pdiag_Double::diago_complex_begin(const int &ik, complex<double> **wfc, Com
         timer::tick("Diago_LCAO_Matrix","genelpa1",'G');
         info=pzDecomposeRightMatrix2(NLOCAL, nrow, ncol, desc,
                                     Stmp, eigen, wfc_2d.c, work,
-                                    comm_2D_f, mpi_comm_rows, mpi_comm_cols,
+                                    comm_2D, comm_2D_f, mpi_comm_rows, mpi_comm_cols,
                                     method, THIS_REAL_ELPA_KERNEL_API);
         timer::tick("Diago_LCAO_Matrix","genelpa1",'G');
         timer::tick("Diago_LCAO_Matrix","genelpa2",'G');
         info=pzSolveEigen2(NBANDS, NLOCAL, nrow, ncol, desc,
                     ch_mat, Stmp, eigen, wfc_2d.c, work,
-                    comm_2D_f, mpi_comm_rows, mpi_comm_cols, method,
+                    comm_2D, comm_2D_f, mpi_comm_rows, mpi_comm_cols, method,
                     THIS_REAL_ELPA_KERNEL_API,
                     wantEigenVector, wantDebug);
         timer::tick("Diago_LCAO_Matrix","genelpa2",'G');

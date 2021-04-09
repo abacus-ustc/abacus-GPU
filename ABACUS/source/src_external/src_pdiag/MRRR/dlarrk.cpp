@@ -102,7 +102,7 @@
 	--d__;
 
 	/* Function Body */
-	eps = dlamch("P");
+	eps = dlamch_("P");
 	/* Computing MAX */
 	d__1 = fabs(*gl), d__2 = fabs(*gu);
 	tnorm = max(d__1, d__2);

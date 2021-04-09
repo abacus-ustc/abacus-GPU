@@ -123,7 +123,7 @@ int pdlarrv_mpi(int *il, int *iu, int *n, double *vl, double *vu, double *d__,
 	/*     The width of the part of Z that is used */
 	zusedw = zusedu - zusedl + 1;
 	pdlaset("Full", n, &zusedw, &c_b5, &c_b5, &z__[zusedl * z_dim1 + 1], ldz);
-	eps = dlamch("Precision");
+	eps = dlamch_("Precision");
 	rqtol = eps * 2.;
 
 	/*     Set expert flags for standard code. */

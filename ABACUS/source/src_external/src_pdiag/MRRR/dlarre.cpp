@@ -256,8 +256,8 @@ int pdlarre(char *range, int *n, double *vl, double *vu, int *il, int *iu,
 	}
 	*m = 0;
 	/*     Get machine constants */
-	safmin = dlamch("S");
-	eps = dlamch("P");
+	safmin = dlamch_("S");
+	eps = dlamch_("P");
 	/*     Set parameters */
 	rtl = sqrt(eps);
 	bsrtol = sqrt(eps);

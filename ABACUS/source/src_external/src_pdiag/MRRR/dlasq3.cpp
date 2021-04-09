@@ -106,7 +106,7 @@
 
 	/* Function Body */
 	n0in = *n0;
-	eps = dlamch("Precision");
+	eps = dlamch_("Precision");
 	tol = eps * 100.;
 	/* Computing 2nd power */
 	d__1 = tol;

@@ -128,8 +128,8 @@ int pdstemr_mpi(MPI_Comm comm1D, char *jobz, char *range, int *n, double * d__,
 
 	/*     Get machine constants. */
 
-	safmin = dlamch("Safe minimum");
-	eps = dlamch("Precision");
+	safmin = dlamch_("Safe minimum");
+	eps = dlamch_("Precision");
 	smlnum = safmin / eps;
 	bignum = 1. / smlnum;
 	rmin = sqrt(smlnum);

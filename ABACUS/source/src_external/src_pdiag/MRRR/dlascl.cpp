@@ -170,7 +170,7 @@
 
 	/*     Get machine parameters */
 
-	smlnum = dlamch("S");
+	smlnum = dlamch_("S");
 	bignum = 1. / smlnum;
 
 	cfromc = *cfrom;

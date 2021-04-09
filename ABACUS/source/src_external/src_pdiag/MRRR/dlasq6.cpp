@@ -87,7 +87,7 @@
 		return 0;
 	}
 
-	safmin = dlamch("Safe minimum");
+	safmin = dlamch_("Safe minimum");
 	j4 = (*i0 << 2) + *pp - 3;
 	emin = z__[j4 + 4];
 	d__ = z__[j4];

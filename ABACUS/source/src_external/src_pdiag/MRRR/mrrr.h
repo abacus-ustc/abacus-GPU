@@ -14,7 +14,7 @@
 #define dmin(a,b) (double)min(a,b)
 #define dmax(a,b) (double)max(a,b)
 
-extern "C" double dlamch(char *);
+extern "C" double dlamch_(char *);
 /*
  extern int pdstemr(char *jobz, char *range, int *n, double * d__, double *e,
  double *vl, double *vu, int *il, int *iu, int *m, double *w,

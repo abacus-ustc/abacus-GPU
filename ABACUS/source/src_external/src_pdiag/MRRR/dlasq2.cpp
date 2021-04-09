@@ -126,8 +126,8 @@ static int c__11 = 11;
 
 	/* Function Body */
 	*info = 0;
-	eps = dlamch("Precision");
-	safmin = dlamch("Safe minimum");
+	eps = dlamch_("Precision");
+	safmin = dlamch_("Safe minimum");
 	tol = eps * 100.;
 	/* Computing 2nd power */
 	d__1 = tol;

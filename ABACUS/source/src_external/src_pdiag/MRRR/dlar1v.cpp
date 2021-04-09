@@ -163,7 +163,7 @@ int pdlar1v(int *n, int *b1, int *bn, double *lambda, double *d__, double *l,
 	--d__;
 
 	/* Function Body */
-	eps = dlamch("Precision");
+	eps = dlamch_("Precision");
 	if (*r__ == 0) {
 		r1 = *b1;
 		r2 = *bn;

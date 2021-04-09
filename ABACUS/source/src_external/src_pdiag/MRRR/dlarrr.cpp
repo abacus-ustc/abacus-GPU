@@ -76,8 +76,8 @@
 
 	/* Function Body */
 	*info = 1;
-	safmin = dlamch("Safe minimum");
-	eps = dlamch("Precision");
+	safmin = dlamch_("Safe minimum");
+	eps = dlamch_("Precision");
 	smlnum = safmin / eps;
 	rmin = sqrt(smlnum);
 	/*     Tests for relative accuracy */

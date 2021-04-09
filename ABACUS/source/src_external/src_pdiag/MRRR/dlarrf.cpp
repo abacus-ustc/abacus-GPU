@@ -140,7 +140,7 @@ static int c__1 = 1;
 	/* Function Body */
 	*info = 0;
 	fact = 2.;
-	eps = dlamch("Precision");
+	eps = dlamch_("Precision");
 	shift = 0;
 	forcer = false
 	;
@@ -185,7 +185,7 @@ static int c__1 = 1;
 
 	/*     Initialize the record of the best representation found */
 
-	s = dlamch("S");
+	s = dlamch_("S");
 	smlgrowth = 1. / s;
 	fail = (double) (*n - 1) * mingap / (*spdiam * eps);
 	fail2 = (double) (*n - 1) * mingap / (*spdiam * sqrt(eps));

@@ -1,35 +1,39 @@
-include Makefile.vars
+FORTRAN         = mpif90
+CPLUSPLUS       = mpic++
+CPLUSPLUS_MPI   = mpic++
 
-#==========================
-# LIB and INCLUDE
-#==========================
-BOOST_INCLUDE_DIR = ${BOOST_DIR}/include
+BOOST_INCLUDE   = -I${HOME}/project/abacus-GPU/3rdparty/boost_1_72_0
 
-LAPACK_INCLUDE_DIR = ${LAPACK_DIR}/include
-LAPACK_LIB_DIR     = ${LAPACK_DIR}/lib/intel64
-LAPACK_LIB         = -L${LAPACK_LIB_DIR} -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -Wl,--end-group -Wl,-rpath=${LAPACK_LIB_DIR}
+#SCALAPACK_LIB	= ${HOME}/project/abacus-GPU/3rdparty/scalapack-2.1.0/lib/libscalapack.a
+SCALAPACK_LIB	= /opt/scalapack/2.1.0/openmpi/4.1.0/gcc/10.3.0/lib/libscalapack.a
+#SCALAPACK_LIB	= -L/opt/scalapack/2.1.0/openmpi/4.1.0/gcc/10.3.0/lib -lscalapack 
+#LAPACK_LIB      = -L${HOME}/project/abacus-GPU/3rdparty/OpenBLAS-0.3.13/lib -lopenblas 
+LAPACK_LIB      = /opt/OpenBLAS/0.3.13/gcc/10.3.0/lib/libopenblas.a
+#LAPACK_LIB      = -L/opt/OpenBLAS/0.3.13/gcc/10.3.0/lib -lopenblas 
+HONG_FFTW       = -D__FFTW3
+FFTW_LIB        = -L/opt/fftw/3.3.9/openmpi/4.1.0/gcc/10.3.0/lib -lfftw3
+#FFTW_LIB        = -L${HOME}/project/abacus-GPU/3rdparty/fftw/lib -lfftw3
+#FFTW_INCLUDE    = -I${HOME}/project/abacus-GPU/3rdparty/fftw/include
 
-HONG_FFTW        = -D__FFTW3
-FFTW_INCLUDE_DIR = ${FFTW_DIR}/include
-FFTW_LIB_DIR     = ${FFTW_DIR}/lib
-# or
-#FFTW_INCLUDE_DIR = $(MKLROOT)/include/fftw
-#FFTW_LIB_DIR     = $(MKLROOT)/lib/intel64
-FFTW_LIB         = -L${FFTW_LIB_DIR} -lfftw3 -Wl,-rpath=${FFTW_LIB_DIR}
-
-ELPA_LIB_DIR = ${ELPA_DIR}/lib
-ELPA_LIB     = -L${ELPA_LIB_DIR} -lelpa -Wl,-rpath=${ELPA_LIB_DIR}
+ELPA_DIR	= ${HOME}/project/abacus-GPU/3rdparty/elpa-2016.05.004
+ELPA_LIB        = ${ELPA_DIR}/lib/libelpa.a
 
 #==========================
 # LIBS and INCLUDES
 #==========================
-LIBS = -lifcore -lm -lpthread ${LAPACK_LIB} ${FFTW_LIB} ${ELPA_LIB}
-#LIBS = -liomp5 -lpthread -lm -ldl ${LAPACK_LIB} ${FFTW_LIB} ${ELPA_LIB}
 
-INCLUDES = -I. -Icommands -I${BOOST_INCLUDE_DIR} -I${LAPACK_INCLUDE_DIR} -I${FFTW_INCLUDE_DIR}
+LIBS = ${ELPA_LIB} ${SCALAPACK_LIB} ${FFTW_LIB} ${LAPACK_LIB} -lgfortran -lmpi_mpifh
+#LIBS = ${SCALAPACK_LIB} ${LAPACK_LIB} ${FFTW_LIB} ${ELPA_LIB} -fortranlibs -lm -L/opt/gcc/7.5.0/lib64 -lstdc++ -L/opt/nvidia/hpc_sdk/Linux_x86_64/20.7/comm_libs/mpi/lib -lmpi
+
+#INCLUDES = -I. -Icommands ${BOOST_INCLUDE} ${LAPACK_INCLUDE} ${FFTW_INCLUDE} -std=c++11
+INCLUDES = -I. -Icommands ${BOOST_INCLUDE} ${LAPACK_INCLUDE} ${FFTW_INCLUDE} 
+#INCLUDES = -I. -Icommands -I/usr/include/c++/4.8.2 -I/usr/include/c++/4.8.2/x86_64-redhat-linux ${BOOST_INCLUDE} ${LAPACK_INCLUDE} ${FFTW_INCLUDE} 
 
 #==========================
 # OPTIMIZE OPTIONS
 #==========================
-OPTS     = ${INCLUDES} -Ofast -g -traceback -xHost -std=c++11 -simd -march=native -m64 -qopenmp -Werror -Wall -pedantic
-OPTS_MPI = -cxx=${CPLUSPLUS}
+OPTS     = ${INCLUDES} -Ofast -fopenmp -std=c++11 -march=native -mtune=native
+#OPTS_CPP = --gnu_version=70500 -D__pgnu_vsn=70500 -D__GCC_ATOMIC_TEST_AND_SET_TRUEVAL=1
+#OPTS     = ${INCLUDES} -fast -mp  -std=c++11
+#OPTS     = ${INCLUDES} -Ofast -g -traceback -xHost -std=c++11 -simd -march=native -m64 -qopenmp -Werror -Wall -pedantic -D_DEBUG
+#OPTS_MPI = -cxx=${CPLUSPLUS}
